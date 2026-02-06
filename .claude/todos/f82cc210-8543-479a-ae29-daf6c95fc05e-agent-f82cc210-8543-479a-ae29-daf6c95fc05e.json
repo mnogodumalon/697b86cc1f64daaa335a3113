@@ -1,17 +1,1 @@
-[
-  {
-    "content": "Add refresh button with last-updated timestamp to dashboard header",
-    "status": "completed",
-    "activeForm": "Adding refresh button with last-updated timestamp to dashboard header"
-  },
-  {
-    "content": "Run npm build to verify changes compile",
-    "status": "completed",
-    "activeForm": "Running npm build to verify compilation"
-  },
-  {
-    "content": "Deploy to GitHub",
-    "status": "in_progress",
-    "activeForm": "Deploying to GitHub"
-  }
-]
+[]
