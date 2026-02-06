@@ -372,10 +372,12 @@ export default function Dashboard() {
 
   // UI states
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedCheckout, setSelectedCheckout] = useState<EnrichedCheckout | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Fetch all data
   const fetchData = async () => {
@@ -394,6 +396,7 @@ export default function Dashboard() {
       setRueckgaben(r);
       setMitarbeiter(m);
       setLagerorte(l);
+      setLastUpdated(new Date());
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unbekannter Fehler'));
     } finally {
@@ -404,6 +407,13 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Refresh data without full loading state
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
 
   // Create lookup maps
   const werkzeugeMap = useMemo(() => {
@@ -663,8 +673,25 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header - Desktop */}
       <header className="hidden md:flex items-center justify-between px-6 py-4 bg-card border-b border-border">
-        <h1 className="text-2xl font-semibold">Werkzeugverwaltung</h1>
         <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold">Werkzeugverwaltung</h1>
+          {lastUpdated && (
+            <span className="text-xs text-muted-foreground">
+              Aktualisiert: {format(lastUpdated, 'HH:mm', { locale: de })} Uhr
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Aktualisieren
+          </Button>
           <Dialog open={checkoutDialogOpen} onOpenChange={setCheckoutDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -692,9 +719,20 @@ export default function Dashboard() {
       {/* Header - Mobile */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
         <h1 className="text-lg font-semibold">Werkzeuge</h1>
-        <Badge variant="secondary" className="text-xs">
-          {werkzeuge.length} Werkzeuge
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="h-8 w-8"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </Button>
+          <Badge variant="secondary" className="text-xs">
+            {werkzeuge.length} Werkzeuge
+          </Badge>
+        </div>
       </header>
 
       {/* Main Content */}
